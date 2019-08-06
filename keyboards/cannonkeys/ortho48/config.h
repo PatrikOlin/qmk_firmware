@@ -39,6 +39,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define BACKLIGHT_BREATHING
 #define BREATHING_PERIOD 6
 
+/* Changes how many times to tap to toggle tapping_toggle */
+#define TAPPING_TOGGLE 2
+
 /* define if matrix has ghost */
 //#define MATRIX_HAS_GHOST
 
