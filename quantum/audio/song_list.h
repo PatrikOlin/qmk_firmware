@@ -46,6 +46,15 @@
     Q__NOTE(_F3)
 */
 
+#define SCROLL_SPEED_2_D E__NOTE(_G4), S__NOTE(_REST), Q__NOTE(_D4),
+#define SCROLL_SPEED_3_D E__NOTE(_A4), S__NOTE(_REST), Q__NOTE(_E4),
+#define SCROLL_SPEED_4_D E__NOTE(_B4), S__NOTE(_REST), Q__NOTE(_F4),
+#define SCROLL_SPEED_5_D E__NOTE(_C5), S__NOTE(_REST), Q__NOTE(_F5),
+#define SCROLL_SPEED_1_U E__NOTE(_C4), S__NOTE(_REST), Q__NOTE(_F4),
+#define SCROLL_SPEED_2_U E__NOTE(_D4), S__NOTE(_REST), Q__NOTE(_G4),
+#define SCROLL_SPEED_3_U E__NOTE(_E4), S__NOTE(_REST), Q__NOTE(_A4),
+#define SCROLL_SPEED_4_U E__NOTE(_F4), S__NOTE(_REST), Q__NOTE(_B4),
+
 #define STARTUP_SOUND E__NOTE(_E6), E__NOTE(_A6), ED_NOTE(_E7),
 
 #define GOODBYE_SOUND E__NOTE(_E7), E__NOTE(_A6), ED_NOTE(_E6),
@@ -134,6 +143,14 @@
     H__NOTE(_BF5), H__NOTE(_C6), H__NOTE(_DF6), H__NOTE(_A5), H__NOTE(_BF5), H__NOTE(_GF5), W__NOTE(_F5), W__NOTE(_F5), W__NOTE(_F5), W__NOTE(_F5), H__NOTE(_GF5), H__NOTE(_F5), H__NOTE(_EF5), H__NOTE(_C5), B__NOTE(_DF5), W__NOTE(_BF4), Q__NOTE(_BF5), Q__NOTE(_C6), Q__NOTE(_DF6), Q__NOTE(_A5), Q__NOTE(_BF5), Q__NOTE(_A5), Q__NOTE(_GS5), Q__NOTE(_A5), Q__NOTE(_C6), Q__NOTE(_BF5), Q__NOTE(_GF5), Q__NOTE(_F5), Q__NOTE(_GF5), Q__NOTE(_E5), Q__NOTE(_F5), Q__NOTE(_BF5), Q__NOTE(_A5), Q__NOTE(_AF5), Q__NOTE(_G5), Q__NOTE(_GF5), Q__NOTE(_F5), Q__NOTE(_E5), Q__NOTE(_EF5), Q__NOTE(_D5), Q__NOTE(_DF5), Q__NOTE(_C5), Q__NOTE(_DF5), Q__NOTE(_C5), Q__NOTE(_B4), Q__NOTE(_C5), Q__NOTE(_F5), Q__NOTE(_E5), Q__NOTE(_EF5), B__NOTE(_DF5), W__NOTE(_BF4), W__NOTE(_BF5), W__NOTE(_BF5), W__NOTE(_BF5), BD_NOTE(_AF5), W__NOTE(_DF5), H__NOTE(_BF4), H__NOTE(_C5), H__NOTE(_DF5), H__NOTE(_GF5), H__NOTE(_GF5), BD_NOTE(_F5), W__NOTE(_EF5), H__NOTE(_F5), H__NOTE(_EF5), H__NOTE(_DF5), H__NOTE(_A4), B__NOTE(_AF4), \
         W__NOTE(_DF5), W__NOTE(_EF5), H__NOTE(_F5), H__NOTE(_EF5), H__NOTE(_DF5), H__NOTE(_EF5), BD_NOTE(_F5),
 
+
+#define ZELDA_TREASURE \
+    Q__NOTE(_A4 ), \
+    Q__NOTE(_AS4), \
+    Q__NOTE(_B4 ), \
+    HD_NOTE(_C5 ), \
+
+
 /* Removed sounds
  +   This list is here solely for compatibility, so that removed songs don't just break things
  *   If you think that any of these songs were wrongfully removed, let us know and provide
@@ -149,12 +166,10 @@
 #define ONE_UP_SOUND
 #define SONIC_RING
 #define ZELDA_PUZZLE
-#define ZELDA_TREASURE
 #define OVERWATCH_THEME
 #define MARIO_THEME
 #define MARIO_GAMEOVER
 #define MARIO_MUSHROOM
-#define E1M1_DOOM
 #define DISNEY_SONG
 #define NUMBER_ONE
 #define CABBAGE_SONG

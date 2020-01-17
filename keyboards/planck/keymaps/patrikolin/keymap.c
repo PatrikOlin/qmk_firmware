@@ -27,7 +27,6 @@ enum planck_layers {
   _RAISEMAC,
   _LOWER,
   _RAISE,
-  _ENCODERADJUST,
   _ADJUST,
   _ADJUSTMAC
 };
@@ -37,18 +36,18 @@ enum planck_keycodes {
   SANE,
   BACKLIT,
   EXT_PLV,
-  ADJ_TOGGLE,
+  ENCADJ,
     DYNAMIC_MACRO_RANGE,
 };
 
- #include "dynamic_macro.h"
+#include "dynamic_macro.h"
 
 #define LOWER TT(_LOWER)
 #define RAISE TT(_RAISE)
 #define LOWERMAC MO(_LOWERMAC)
 #define RAISEMAC MO(_RAISEMAC)
-#define ENCADJ TG(_ENCODERADJUST)
 
+bool adjust_encoder_speed = false;
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -67,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ENCADJ,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, \
   KC_TAB,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, \
   SFT_T(KC_ESC), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  SE_QUES, KC_SFTENT , \
-  KC_LGUI,  KC_LCTRL, KC_LALT, KC_BSPC, LOWERMAC,   KC_SPC,  ENCADJ,  RAISEMAC,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT \
+  KC_LGUI,  KC_LCTRL, KC_LALT, KC_BSPC, LOWERMAC,   KC_SPC,  KC_SPC,  RAISEMAC,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT \
 ),
 
 /* SANE
@@ -85,7 +84,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ENCADJ,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, \
   KC_TAB,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, \
   SFT_T(KC_ESC), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  SE_QUES, KC_SFTENT , \
-  KC_LCTRL,  KC_LGUI, KC_LALT, KC_BSPC, LOWER,   KC_SPC,  KC_LEAD,  RAISE,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT \
+  KC_LCTRL,  KC_LGUI, KC_LALT, KC_BSPC, LOWER,   KC_SPC,  KC_SPC,  RAISE,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT \
 ),
 
 /* Lower
@@ -98,12 +97,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |------+------+------+------+------+------+------+------+------+------+------+------|
  * |      |      |      |      |      |             |      | Next | Vol- | Vol+ | Play |
  * `-----------------------------------------------------------------------------------'
+ *
  */
+
 [_LOWERMAC] = LAYOUT_planck_grid(
-    KC_LALT, KC_EXLM, SE_AT,   KC_HASH, SE_DLR,  KC_PERC,  SE_AMPR, SE_CIRC,  SE_ASTR,  KC_GRV, S(KC_GRV), KC_BSPC, \
-    KC_DEL,  SE_SLSH,   SE_LPRN,   SE_RPRN,   SE_APOS,   SE_GRV,   SE_TILD,   SE_MINS,    SE_LCBR_MAC,    SE_RCBR_MAC, SE_PLUS, SE_PIPE,\
-    _______, SE_BSLS_MAC,   SE_LCBR,   SE_RCBR,   SE_QUO2,  _______,  _______,  SE_UNDS, SE_LBRC, SE_RBRC, SE_EQL,  SE_TILD,
-    _______,   _______, SE_LBRC, SE_RBRC, KC_TRNS, _______, _______, KC_TRNS,    KC_MNXT,    KC_VOLD, KC_VOLU, KC_MPLY
+    KC_LALT, KC_EXLM,       SE_LBRC,    SE_RBRC,    SE_QUO2,  KC_PERC,  SE_AMPR,  SE_PLUS,  KC_GRV,         S(KC_GRV),     SE_ASTR,  KC_BSPC, \
+    KC_DEL,  SE_SLSH,       SE_LPRN,    SE_RPRN,    SE_APOS,  SE_GRV,   SE_AT,    SE_MINS,  SE_LCBR_MAC,    SE_RCBR_MAC,   SE_CIRC,    SE_PIPE_MAC,\
+    _______, SE_BSLS_MAC,   SE_ASTR,    SE_DLR,     SE_SCLN,   KC_HASH,  SE_TILD, SE_UNDS, SE_SCLN,        SE_COLN,       SE_EQL,     SE_TILD, \
+    _______, _______,       _______,     _______,   KC_TRNS,  _______,  _______,  KC_TRNS,  KC_MNXT,        KC_VOLD,       KC_VOLU,    KC_MPLY \
 ),
 
 /* Raise
@@ -135,10 +136,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------------------------------------------------------'
  */
 [_LOWER] = LAYOUT_planck_grid(
-    KC_LALT, KC_EXLM,   SE_AT,    KC_HASH, SE_DLR,  KC_PERC,  SE_AMPR, SE_CIRC,   KC_GRV,    SE_LESS, SE_GRTR, KC_BSPC, \
-    KC_DEL,  SE_SLSH,   SE_LPRN,   SE_RPRN,   SE_APOS,   SE_GRV,   SE_TILD,   SE_MINS,    SE_LCBR,    SE_RCBR, SE_PLUS, SE_PIPE,\
-    _______, SE_BSLS,   SE_LCBR,   SE_RCBR,   SE_QUO2,  _______,  _______,  SE_UNDS, SE_LBRC, SE_RBRC, SE_EQL,  SE_TILD,
-    KC_LCTRL,   _______, SE_LBRC, SE_RBRC, KC_TRNS, _______, _______, KC_TRNS,    KC_MNXT,    KC_VOLD, KC_VOLU, KC_MPLY
+    KC_LALT,   KC_EXLM,   SE_LBRC,   SE_RBRC,   SE_QUO2,  KC_PERC,  SE_AMPR,  SE_PLUS,   SE_LESS,   SE_GRTR, SE_ASTR, KC_BSPC, \
+    KC_DEL,    SE_SLSH,   SE_LPRN,   SE_RPRN,   SE_APOS,  SE_GRV,   SE_AT,    SE_MINS,   SE_LCBR,   SE_RCBR, SE_CIRC, SE_PIPE,\
+    _______,   SE_BSLS,   SE_ASTR,   SE_DLR,    SE_SCLN,  KC_HASH,  SE_TILD,  SE_UNDS,   SE_SCLN,   SE_COLN, SE_EQL,  SE_TILD,
+    KC_LCTRL,  _______,   _______,   _______,   KC_TRNS,  _______,  _______,  KC_TRNS,   KC_MNXT,   KC_VOLD, KC_VOLU, KC_MPLY
 ),
 
 /* Raise
@@ -197,22 +198,27 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     CK_RST,  CK_DOWN, CK_UP, _______, _______, _______, _______, _______, _______,  DYN_MACRO_PLAY1, DYN_MACRO_PLAY2, _______
 
 ),
-[_ENCODERADJUST] = LAYOUT_planck_grid(
-    ENCADJ, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______,
-    _______, _______, _______, _______, _______, _______, ENCADJ, _______, _______, _______, _______,  _______
 
-)
 
 };
 
 #ifdef AUDIO_ENABLE
+
   float plover_song[][2]     = SONG(PLOVER_SOUND);
   float plover_gb_song[][2]  = SONG(PLOVER_GOODBYE_SOUND);
   float ode_to_joy[][2]      = SONG(ODE_TO_JOY);
   float planck_sound[][2]    = SONG(PLANCK_SOUND);
+  float zelda_chest[][2]     = SONG(ZELDA_TREASURE);
+  float ss_1[][2]            = SONG(SCROLL_SPEED_1);
+  float ss_2[][2]            = SONG(SCROLL_SPEED_2);
+  float ss_3[][2]            = SONG(SCROLL_SPEED_3);
+  float ss_4[][2]            = SONG(SCROLL_SPEED_4);
+  float ss_5[][2]            = SONG(SCROLL_SPEED_5);
+
+
 #endif
+
+uint8_t scroll_speed = 1;
 
 layer_state_t layer_state_set_user(layer_state_t state) {
     state = update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
@@ -228,13 +234,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case ENCADJ:
         if(record->event.pressed) {
             adjust_encoder_speed = !adjust_encoder_speed;
+            if (scroll_speed == 1) {
+                PLAY_SONG(ss_1);
+            } else if (scroll_speed == 2) {
+                PLAY_SONG(ss_2);
+            } else if (scroll_speed == 3) {
+                PLAY_SONG(ss_3);
+            } else if (scroll_speed == 4) {
+                PLAY_SONG(ss_4);
+            } else if (scroll_speed == 5) {
+                PLAY_SONG(ss_5);
+            }
         }
         return false;
         break;
     case MACOS:
       if (record->event.pressed) {
         stop_all_notes();
-        PLAY_SONG(ode_to_joy);
+        PLAY_SONG(zelda_chest);
         set_single_persistent_default_layer(_MACOS);
       }
       return false;
@@ -273,8 +290,6 @@ uint8_t last_muse_note = 0;
 uint16_t muse_counter = 0;
 uint8_t muse_offset = 70;
 uint16_t muse_tempo = 50;
-bool adjust_encoder_speed = false;
-uint8_t scroll_speed = 1;
 uint8_t x;
 
 void encoder_update(bool clockwise) {
@@ -292,13 +307,37 @@ void encoder_update(bool clockwise) {
                 muse_tempo-=1;
             }
         }
-    } else if (adjust_encoder_speed == true)) {
-      if (clockwise && scroll_speed < 5) {
-          scroll_speed++;
+    } else if (adjust_encoder_speed) {
+      if (clockwise) {
+          if (scroll_speed < 5) {
+            scroll_speed++;
+          }
+            if (scroll_speed == 1) {
+                PLAY_SONG(ss_1);
+            } else if (scroll_speed == 2) {
+                PLAY_SONG(ss_2);
+            } else if (scroll_speed == 3) {
+                PLAY_SONG(ss_3);
+            } else if (scroll_speed == 4) {
+                PLAY_SONG(ss_4);
+            } else if (scroll_speed == 5) {
+                PLAY_SONG(ss_5);
+            }
       } else {
         if(scroll_speed > 1) {
-          scroll_speed--;
+            scroll_speed--;
         }
+            if (scroll_speed == 1) {
+                PLAY_SONG(ss_1);
+            } else if (scroll_speed <= 2) {
+                PLAY_SONG(ss_2);
+            } else if (scroll_speed == 3) {
+                PLAY_SONG(ss_3);
+            } else if (scroll_speed == 4) {
+                PLAY_SONG(ss_4);
+            } else if (scroll_speed == 5) {
+                PLAY_SONG(ss_5);
+            }
       }
     }
     else if (IS_LAYER_ON(_RAISEMAC)) {
