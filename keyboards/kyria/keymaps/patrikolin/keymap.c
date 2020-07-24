@@ -14,15 +14,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include QMK_KEYBOARD_H
+#include <stdio.h>
 #include "quantum/keymap_extras/keymap_swedish.h"
 
 enum layers {
-    QWERTY = 0,
-    LOWERMAC,
-    RAISEMAC,
-    ADJUSTMAC
+    _SANE = 0,
+    _LOWER,
+    _RAISE,
+    _ADJUST,
+    _MACOS,
+    _LOWERMAC,
+    _RAISEMAC,
+    _ADJUSTMAC,
 };
 
+enum custom_keycodes {
+    SANE = SAFE_RANGE,
+    MACOS
+};
+
+char wpm_string[21] = {};
+int time_combo_started = 0;
+int number_keys_this_combo = 0;
+int time_previous_key_pressed = 0;
+
+/*  bool has_layer_changed = false;
+static uint8_t current_layer;
+*/
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /*
@@ -39,12 +57,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Alt  | Lower| Raise|  | Lower| Raise|      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [QWERTY] = LAYOUT(
+    [_SANE] = LAYOUT(
       KC_TAB,       KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC,
       SFT_T(KC_ESC),   KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-      KC_LSFT,                 KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_LSFT,   KC_LSFT, KC_LSFT, KC_LSFT, KC_N,    KC_M,    KC_COMM, KC_DOT,  SE_QUES, KC_SFTENT,
-              KC_LGUI, KC_DEL, MT(MOD_LALT, KC_ENT), LT(LOWERMAC, KC_SPC), LT(RAISEMAC, KC_ESC), LT(LOWERMAC, KC_ENT), LT(RAISEMAC, KC_SPC), KC_TAB,  KC_BSPC, KC_RALT
+      KC_LCTRL, KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_LSFT,   KC_ENT, XXXXXXX, KC_LSFT, KC_N,    KC_M,    KC_COMM, KC_DOT,  SE_QUES, KC_SFTENT,
+              KC_LALT, KC_LGUI, KC_BSPC, LT(_LOWER, KC_SPC), LT(_RAISE, KC_ESC), XXXXXXX, LT(_RAISE, KC_ENT), KC_LGUI,  KC_BSPC, KC_RALT
     ),
+
+    [_MACOS] = LAYOUT(
+      KC_TAB,       KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC,
+      SFT_T(KC_ESC),   KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+      KC_LCTRL, KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_LSFT,   KC_ENT, XXXXXXX, KC_LSFT, KC_N,    KC_M,    KC_COMM, KC_DOT,  SE_QUES, KC_SFTENT,
+              KC_LALT, KC_LGUI, KC_BSPC, LT(_LOWERMAC, KC_SPC), LT(_RAISEMAC, KC_ESC), XXXXXXX, LT(_RAISEMAC, KC_ENT), KC_LGUI,  KC_BSPC, KC_RALT
+    ),
+
 /*
  * Lower Layer: Symbols
  *
@@ -59,11 +85,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [LOWERMAC] = LAYOUT(
+    [_LOWERMAC] = LAYOUT(
       _______, KC_EXLM, SE_LBRC,   SE_RBRC, SE_QUO2, KC_PERC,                                     SE_AMPR, SE_PLUS, KC_GRV, S(KC_GRV), SE_ASTR, SE_PIPE_MAC,
       KC_LALT, SE_SLSH, SE_LPRN,  SE_RPRN, SE_APOS, SE_GRV,                                      SE_AT, SE_MINS, SE_LCBR_MAC, SE_RCBR_MAC, SE_CIRC, SE_PIPE_MAC,
       KC_DEL,  SE_BSLS_MAC, SE_ASTR, SE_DLR, SE_SCLN, KC_HASH, _______, _______, _______, _______, SE_TILD, SE_UNDS, SE_SCLN, SE_COLN,  SE_EQL, SE_TILD,
-                                 _______, _______, _______, KC_SCLN, KC_EQL,  SE_PLUS,  KC_MINS, _______, _______, _______
+                                 _______, _______, _______, LT(_LOWERMAC, KC_SPC), LT(_RAISEMAC, KC_ESC), XXXXXXX, LT(_RAISEMAC, KC_ENT), _______, _______, _______
     ),
 /*
  * Raise Layer: Number keys, media, navigation
@@ -79,11 +105,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [RAISEMAC] = LAYOUT(
-      _______, KC_1, 	  KC_2,    KC_3,    KC_4,    KC_5,                                        KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
-      _______, _______, KC_MPRV, KC_MPLY, KC_MNXT, KC_VOLU,                                     KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, _______,
-      _______, _______, _______, _______, KC_MUTE, KC_VOLD, _______, _______, _______, _______, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, _______, _______,
-                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
+    [_RAISEMAC] = LAYOUT(
+      _______, _______, KC_F9, KC_F10, KC_F11, KC_F12,                                    SE_ASTR, KC_7,  KC_8,   KC_9,    KC_0,    _______,
+      _______, _______, KC_F5, KC_F6,  KC_F7,  KC_F8,                                     SE_PLUS, KC_4,  KC_5,   KC_6, _______, _______,
+      _______, _______, KC_F1, KC_F2,  KC_F3,  KC_F4, _______, _______, _______, _______, SE_MINS, KC_1,  KC_2,   KC_3, _______, _______,
+                                 _______, _______, _______, LT(_LOWERMAC, KC_SPC), LT(_RAISEMAC, KC_ESC), XXXXXXX, LT(_RAISEMAC, KC_ENT), _______, KC_0, _______
     ),
 /*
  * Adjust Layer: Function keys, RGB
@@ -99,11 +125,32 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [ADJUSTMAC] = LAYOUT(
-      _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                                       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
-      _______, RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD,                                     _______, _______, _______, KC_F11,  KC_F12,  _______,
-      _______, _______, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,_______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
+    [_ADJUSTMAC] = LAYOUT(
+      _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   DF(_MACOS),                                       DF(_SANE),   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
+      _______, RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD,                                         KC_LEFT, KC_DOWN, KC_UP, KC_RIGHT,  KC_F12,  _______,
+      _______, RGB_MOD, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,_______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+                                 _______, _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______
+    ),
+
+    [_ADJUST] = LAYOUT(
+      _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   DF(_MACOS),                                       DF(_SANE),   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
+      _______, RGB_TOG, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD,                                     KC_LEFT, KC_DOWN, KC_UP, KC_RIGHT,  KC_F12,  _______,
+      _______, RGB_MOD, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,_______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+                                 _______, _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______
+    ),
+
+    [_LOWER] = LAYOUT(
+      _______,  KC_EXLM, SE_LBRC, SE_RBRC,  SE_QUO2,  KC_PERC,                                     SE_AMPR, SE_PLUS,  SE_LESS,  SE_GRTR,  SE_ASTR, SE_PIPE,
+      KC_LALT,  SE_SLSH, SE_LPRN, SE_RPRN,  SE_APOS,  SE_GRV,                                      SE_AT,   SE_MINS,  SE_LCBR,  SE_RCBR,  SE_CIRC, SE_PIPE,
+      KC_LCTRL, SE_BSLS, SE_ASTR, SE_DLR,   SE_SCLN,  KC_HASH, _______, _______, _______, _______, SE_TILD, SE_UNDS,  SE_SCLN,  SE_COLN,  SE_EQL,  SE_TILD,
+                                 _______, _______, _______, LT(_LOWER, KC_SPC), LT(_RAISE, KC_ESC), XXXXXXX, LT(_RAISE, KC_ENT), _______, KC_0, _______
+    ),
+
+    [_RAISE] = LAYOUT(
+      _______, _______, KC_F9, KC_F10, KC_F11, KC_F12,                                    SE_ASTR, KC_7,  KC_8,   KC_9,    KC_0,    _______,
+      _______, _______, KC_F5, KC_F6,  KC_F7,  KC_F8,                                     SE_PLUS, KC_4,  KC_5,   KC_6, _______, _______,
+      _______, _______, KC_F1, KC_F2,  KC_F3,  KC_F4, _______, _______, _______, _______, SE_MINS, KC_1,  KC_2,   KC_3, _______, _______,
+                                 _______, _______, _______, LT(_LOWER, KC_SPC), LT(_RAISE, KC_ESC), XXXXXXX, LT(_RAISE, KC_ENT), _______, KC_0, _______
     ),
 // /*
 //  * Layer template
@@ -128,13 +175,40 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-    return update_tri_layer_state(state, LOWERMAC, RAISEMAC, ADJUSTMAC);
+    state = update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
+    state = update_tri_layer_state(state, _LOWERMAC, _RAISEMAC, _ADJUSTMAC);
+  return state;
 }
 
 
 #ifdef OLED_DRIVER_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 	return OLED_ROTATION_180;
+}
+
+
+void set_wpm(void) {
+  if (timer_elapsed(time_previous_key_pressed) >= 2000) {
+    time_combo_started = timer_read();
+    number_keys_this_combo = 1;
+  } else {
+    number_keys_this_combo++;
+  }
+  time_previous_key_pressed = timer_read();
+}
+
+
+const char *read_wpm_string(void) {
+  float words = (number_keys_this_combo / 5);
+  float time = (time_previous_key_pressed - time_combo_started);
+  int wpm = round(words / (time / 1000 / 60));
+  snprintf(wpm_string, sizeof(wpm_string), "WPM: %5d", wpm);
+  return wpm_string;
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+set_wpm();
+return true;
 }
 
 static void render_kyria_logo(void) {
@@ -162,23 +236,44 @@ static void render_qmk_logo(void) {
 
 static void render_status(void) {
     // QMK Logo and version information
-    render_qmk_logo();
+render_qmk_logo();
+//oled_write_P(PSTR(read_wpm_string()), false);
     oled_write_P(PSTR("       Kyria rev1.0\n\n"), false);
 
     // Host Keyboard Layer Status
     oled_write_P(PSTR("Layer: "), false);
     switch (get_highest_layer(layer_state)) {
-        case QWERTY:
-            oled_write_P(PSTR("Default\n"), false);
+        case _MACOS:
+            oled_write_P(PSTR("Default (Mac)\n"), false);
+             rgblight_sethsv(HSV_CYAN);
             break;
-        case LOWERMAC:
-            oled_write_P(PSTR("Lower\n"), false);
+        case _LOWERMAC:
+            oled_write_P(PSTR("Lower (Mac)\n"), false);
+            rgblight_sethsv(HSV_YELLOW);
             break;
-        case RAISEMAC:
-            oled_write_P(PSTR("Raise\n"), false);
+        case _RAISEMAC:
+            oled_write_P(PSTR("Raise (Mac)\n"), false);
+            rgblight_sethsv(HSV_MAGENTA);
             break;
-        case ADJUSTMAC:
-            oled_write_P(PSTR("Adjust\n"), false);
+        case _ADJUSTMAC:
+            oled_write_P(PSTR("Adjust (Mac)\n"), false);
+            rgblight_sethsv(HSV_PINK);
+            break;
+        case _SANE:
+            oled_write_P(PSTR("Default (Sane)\n"), false);
+            rgblight_sethsv(HSV_CYAN);
+            break;
+        case _LOWER:
+            oled_write_P(PSTR("Lower (Sane)\n"), false);
+            rgblight_sethsv(HSV_YELLOW);
+            break;
+        case _RAISE:
+            oled_write_P(PSTR("Raise (Sane)\n"), false);
+            rgblight_sethsv(HSV_MAGENTA);
+            break;
+        case _ADJUST:
+            oled_write_P(PSTR("Adjust (Sane)\n"), false);
+rgblight_sethsv(HSV_PINK);
             break;
         default:
             oled_write_P(PSTR("Undefined\n"), false);
@@ -204,7 +299,7 @@ void oled_task_user(void) {
 void encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
         switch (biton32(layer_state)) {
-            case QWERTY:
+            case _MACOS:
                 // Move whole words. Hold shift to select while moving.
                 if (clockwise) {
                     tap_code16(C(KC_RGHT));
@@ -224,7 +319,7 @@ void encoder_update_user(uint8_t index, bool clockwise) {
         }
     } else if (index == 1) {
         switch (biton32(layer_state)) {
-            case QWERTY:
+            case _MACOS:
                 // Scrolling with PageUp and PgDn.
                 if (clockwise) {
                     tap_code(KC_PGDN);
