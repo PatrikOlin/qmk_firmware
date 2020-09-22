@@ -28,6 +28,7 @@
 #endif
 
 #define MASTER_LEFT
+#define ENCODER_RESOLUTION 2
 
 #define NO_ACTION_MACRO
 #define NO_ACTION_FUNCTION
